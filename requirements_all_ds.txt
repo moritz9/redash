@@ -24,6 +24,10 @@ pymapd>=0.2.1
 qds-sdk>=1.9.6
 # certifi is needed to support MongoDB and SSL:
 certifi
+* requirements for connecting to Apache Drill
+pydrill>=0.1.1
+kazoo==2.2.1
+protobuf==3.0.0
 # We don't install snowflake connector by default, as it's causing conflicts with
 # other packages. To properly support it we probably need to switch from pyOpenSSL
 # to the other package snowflake is using (that's compatible with it).
