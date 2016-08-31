@@ -24,7 +24,8 @@ pymapd>=0.2.1
 qds-sdk>=1.9.6
 # certifi is needed to support MongoDB and SSL:
 certifi
-* requirements for connecting to Apache Drill
+# requirements for connecting to Apache Drill
+cassandra-driver==3.1.1
 pydrill>=0.1.1
 kazoo==2.2.1
 protobuf==3.0.0
