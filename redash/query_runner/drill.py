@@ -132,7 +132,6 @@ class Drill(BaseQueryRunner):
             return m.group(0)
         return ''
 
-
     def run_query(self, query):
         drillbit_host, drillbit_port = self.get_drillbit(
             self.configuration.get('host', None),
