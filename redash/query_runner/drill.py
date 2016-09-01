@@ -67,12 +67,19 @@ class Drill(BaseQueryRunner):
         return enabled
 
     @classmethod
+    def annotate_query(cls):
+        return True
+
+    @classmethod
     def name(cls):
         return "Apache Drill"
 
     @classmethod
     def type(cls):
         return "drill"
+
+    def get_schema(self, get_stats=False):
+        return []
 
     def __init__(self, configuration):
         logger.info('config: ' + str(configuration))
@@ -111,13 +118,19 @@ class Drill(BaseQueryRunner):
         print("HTTP Code: {0}\n{1}".format(r.status_code, r.text))
         return False
 
-    def strip_comments(self, text):
+    def strip_comments(self, query):
         result = []
-        for line in re.sub('/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/', '', text, re.S).split('\n'):
+        for line in re.sub('/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/', '', query, re.S).split('\n'):
             if line.startswith('#') or line.startswith('--'):
                 continue
             result.append(line)
         return '\n'.join(result)
+
+    def get_annotation(self, query):
+        m = re.search('^/\*.*\*/', query)
+        if m:
+            return m.group(0)
+        return ''
 
 
     def run_query(self, query):
@@ -146,12 +159,15 @@ class Drill(BaseQueryRunner):
             error = 'Please run Drill first'
             return json_data, error
 
+        annotation = self.get_annotation(query)
+
         try:
             result = None
             for q in self.strip_comments(query).split(';'):
                 q = q.strip()
                 if not q:
                     continue
+                q = annotation + q
                 result = connection.query(q, timeout=600)
                 print(result.rows)
                 logger.info(result.rows)
