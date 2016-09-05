@@ -235,6 +235,7 @@
         };
 
         $scope.hourOptions = _.map(_.range(0, 24), _.partial(padWithZeros, 2));
+        $scope.hourOptions.push('hourly')
         $scope.minuteOptions = _.map(_.range(0, 60, 5), _.partial(padWithZeros, 2));
 
         if ($scope.query.hasDailySchedule()) {
@@ -247,7 +248,13 @@
         }
 
         $scope.updateSchedule = function() {
-          var newSchedule = moment().hour($scope.hour).minute($scope.minute).utc().format('HH:mm');
+          var newSchedule;
+          if ($scope.hour == 'hourly') {
+            newSchedule = 'hourly:' + $scope.minute;
+            console.log(newSchedule);
+          } else {
+            newSchedule = moment().hour($scope.hour).minute($scope.minute).utc().format('HH:mm');
+          }
           if (newSchedule != $scope.query.schedule) {
             $scope.query.schedule = newSchedule;
             $scope.saveQuery();

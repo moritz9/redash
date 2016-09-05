@@ -561,18 +561,24 @@ def should_schedule_next(previous_iteration, now, schedule):
         ttl = int(schedule)
         next_iteration = previous_iteration + datetime.timedelta(seconds=ttl)
     else:
+        logging.info("Checking schedule %s", schedule)
         hour, minute = schedule.split(':')
-        hour, minute = int(hour), int(minute)
+        if hour == 'hourly':
+            minute = int(minute)
+            next_iteration = previous_iteration.replace(minute=minute)
+            if next_iteration < previous_iteration:
+                next_iteration = next_iteration +  datetime.timedelta(hours=1)
+        else:
+            hour, minute = int(hour), int(minute)
+            # The following logic is needed for cases like the following:
+            # - The query scheduled to run at 23:59.
+            # - The scheduler wakes up at 00:01.
+            # - Using naive implementation of comparing timestamps, it will skip the execution.
+            normalized_previous_iteration = previous_iteration.replace(hour=hour, minute=minute)
+            if normalized_previous_iteration > previous_iteration:
+                previous_iteration = normalized_previous_iteration - datetime.timedelta(days=1)
 
-        # The following logic is needed for cases like the following:
-        # - The query scheduled to run at 23:59.
-        # - The scheduler wakes up at 00:01.
-        # - Using naive implementation of comparing timestamps, it will skip the execution.
-        normalized_previous_iteration = previous_iteration.replace(hour=hour, minute=minute)
-        if normalized_previous_iteration > previous_iteration:
-            previous_iteration = normalized_previous_iteration - datetime.timedelta(days=1)
-
-        next_iteration = (previous_iteration + datetime.timedelta(days=1)).replace(hour=hour, minute=minute)
+            next_iteration = (previous_iteration + datetime.timedelta(days=1)).replace(hour=hour, minute=minute)
 
     return now > next_iteration
 

@@ -28,12 +28,13 @@ angular.module('redash.filters', []).
     return function (schedule) {
       if (schedule === null) {
         return "Never";
+      } else if (schedule.match(/hourly:\d\d/) !== null) {
+        return "" + schedule;
       } else if (schedule.match(/\d\d:\d\d/) !== null) {
         var parts = schedule.split(':');
         var localTime = moment.utc().hour(parts[0]).minute(parts[1]).local().format('HH:mm');
         return "Every day at " + localTime;
       }
-
       return "Every " + durationHumanize(parseInt(schedule));
     }
   })
