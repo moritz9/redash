@@ -21,13 +21,14 @@ function queryTimePicker() {
       saveQuery: '=',
     },
     template: `
-      <select ng-disabled="refreshType != 'daily'" ng-model="hour" ng-change="updateSchedule()" 
+      <select ng-disabled="refreshType != 'daily'" ng-model="hour" ng-change="updateSchedule()"
         ng-options="c as c for c in hourOptions"></select> :
-      <select ng-disabled="refreshType != 'daily'" ng-model="minute" ng-change="updateSchedule()" 
+      <select ng-disabled="refreshType != 'daily'" ng-model="minute" ng-change="updateSchedule()"
         ng-options="c as c for c in minuteOptions"></select>
     `,
     link($scope) {
       $scope.hourOptions = map(range(0, 24), partial(padWithZeros, 2));
+      $scope.hourOptions.push('hourly')
       $scope.minuteOptions = map(range(0, 60, 5), partial(padWithZeros, 2));
 
       if ($scope.query.hasDailySchedule()) {
@@ -40,11 +41,16 @@ function queryTimePicker() {
       }
 
       $scope.updateSchedule = () => {
-        const newSchedule = moment().hour($scope.hour)
-          .minute($scope.minute)
-          .utc()
-          .format('HH:mm');
-
+        var newSchedule;
+        if ($scope.hour == 'hourly') {
+          newSchedule = 'hourly:' + $scope.minute;
+          console.log(newSchedule);
+        } else {
+          newSchedule = moment().hour($scope.hour)
+            .minute($scope.minute)
+            .utc()
+            .format('HH:mm');
+        }
         if (newSchedule !== $scope.query.schedule) {
           $scope.query.schedule = newSchedule;
           $scope.saveQuery();

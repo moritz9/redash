@@ -2,6 +2,7 @@ import json
 import requests
 import random
 import re
+from datetime import datetime, timedelta
 
 from redash.utils import JSONEncoder
 from redash.query_runner import *
@@ -132,6 +133,14 @@ class Drill(BaseQueryRunner):
             return m.group(0)
         return ''
 
+    def magic_helpers(self, query):
+        now = datetime.utcnow()
+        lasthour = (now - timedelta(hours=1)).strftime("%Y/%m/%d/%H")
+        yesterday = (now - timedelta(days=1)).strftime("%Y/%m/%d")
+        result = query.replace('$LASTHOUR$', lasthour)
+        result = result.replace('$YESTERDAY$', yesterday)
+        return result
+
     def run_query(self, query):
         drillbit_host, drillbit_port = self.get_drillbit(
             self.configuration.get('host', None),
@@ -166,6 +175,7 @@ class Drill(BaseQueryRunner):
                 q = q.strip()
                 if not q:
                     continue
+                q = self.magic_helpers(q)
                 q = annotation + q
                 result = connection.query(q, timeout=600)
                 print(result.rows)
@@ -181,10 +191,10 @@ class Drill(BaseQueryRunner):
             error = None
         except TransportError as te:
             json_data = None
-            error = te.error
+            error = drillbit_host + '\n' + te.error
         except Exception as ex:
             json_data = None
-            error = str(ex)
+            error = drillbit_host + '\n' + str(ex)
 
         return json_data, error
 
