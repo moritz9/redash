@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 try:
     from pyhive import hive
     enabled = True
-except ImportError, e:
+except ImportError:
     enabled = False
 
 COLUMN_NAME = 0
@@ -35,6 +35,8 @@ types_map = {
 
 
 class Hive(BaseSQLQueryRunner):
+    noop_query = "SELECT 1"
+
     @classmethod
     def configuration_schema(cls):
         return {
@@ -77,11 +79,11 @@ class Hive(BaseSQLQueryRunner):
 
             tables_query = "show tables in %s"
 
-            columns_query = "show columns in %s"
+            columns_query = "show columns in %s.%s"
 
             for schema_name in filter(lambda a: len(a) > 0, map(lambda a: str(a['database_name']), self._run_query_internal(schemas_query))):
                 for table_name in filter(lambda a: len(a) > 0, map(lambda a: str(a['tab_name']), self._run_query_internal(tables_query % schema_name))):
-                    columns = filter(lambda a: len(a) > 0, map(lambda a: str(a['field']), self._run_query_internal(columns_query % table_name)))
+                    columns = filter(lambda a: len(a) > 0, map(lambda a: str(a['field']), self._run_query_internal(columns_query % (schema_name, table_name))))
 
                     if schema_name != 'default':
                         table_name = '{}.{}'.format(schema_name, table_name)
@@ -91,7 +93,7 @@ class Hive(BaseSQLQueryRunner):
             raise sys.exc_info()[1], None, sys.exc_info()[2]
         return schema.values()
 
-    def run_query(self, query):
+    def run_query(self, query, user):
 
         connection = None
         try:
@@ -123,9 +125,6 @@ class Hive(BaseSQLQueryRunner):
             connection.cancel()
             error = "Query cancelled by user."
             json_data = None
-        except Exception as e:
-            logging.exception(e)
-            raise sys.exc_info()[1], None, sys.exc_info()[2]
         finally:
             if connection:
                 connection.close()

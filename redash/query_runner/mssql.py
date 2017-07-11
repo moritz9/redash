@@ -18,10 +18,13 @@ except ImportError:
 types_map = {
     1: TYPE_STRING,
     2: TYPE_BOOLEAN,
-    3: TYPE_INTEGER,
+    # Type #3 supposed to be an integer, but in some cases decimals are returned
+    # with this type. To be on safe side, marking it as float.
+    3: TYPE_FLOAT,
     4: TYPE_DATETIME,
     5: TYPE_FLOAT,
 }
+
 
 class MSSQLJSONEncoder(JSONEncoder):
     def default(self, o):
@@ -29,7 +32,10 @@ class MSSQLJSONEncoder(JSONEncoder):
             return str(o)
         return super(MSSQLJSONEncoder, self).default(o)
 
+
 class SqlServer(BaseSQLQueryRunner):
+    noop_query = "SELECT 1"
+
     @classmethod
     def configuration_schema(cls):
         return {
@@ -80,20 +86,24 @@ class SqlServer(BaseSQLQueryRunner):
     def type(cls):
         return "mssql"
 
+    @classmethod
+    def annotate_query(cls):
+        return False
+
     def __init__(self, configuration):
         super(SqlServer, self).__init__(configuration)
 
     def _get_tables(self, schema):
         query = """
         SELECT table_schema, table_name, column_name
-        FROM information_schema.columns
+        FROM INFORMATION_SCHEMA.COLUMNS
         WHERE table_schema NOT IN ('guest','INFORMATION_SCHEMA','sys','db_owner','db_accessadmin'
                                   ,'db_securityadmin','db_ddladmin','db_backupoperator','db_datareader'
                                   ,'db_datawriter','db_denydatareader','db_denydatawriter'
                                   );
         """
 
-        results, error = self.run_query(query)
+        results, error = self.run_query(query, None)
 
         if error is not None:
             raise Exception("Failed getting schema.")
@@ -113,9 +123,7 @@ class SqlServer(BaseSQLQueryRunner):
 
         return schema.values()
 
-
-    def run_query(self, query):
-
+    def run_query(self, query, user):
         connection = None
 
         try:
@@ -154,7 +162,6 @@ class SqlServer(BaseSQLQueryRunner):
 
             cursor.close()
         except pymssql.Error as e:
-            logging.exception(e)
             try:
                 # Query errors are at `args[1]`
                 error = e.args[1]

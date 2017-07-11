@@ -1,8 +1,8 @@
 import json
 import logging
 
-from redash.utils import JSONEncoder
 from redash.query_runner import *
+from redash.utils import JSONEncoder
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +49,8 @@ def _transform_result(results):
 
 
 class InfluxDB(BaseQueryRunner):
+    noop_query = "show measurements limit 1"
+
     @classmethod
     def configuration_schema(cls):
         return {
@@ -76,7 +78,7 @@ class InfluxDB(BaseQueryRunner):
     def __init__(self, configuration):
         super(InfluxDB, self).__init__(configuration)
 
-    def run_query(self, query):
+    def run_query(self, query, user):
         client = InfluxDBClusterClient.from_DSN(self.configuration['url'])
 
         logger.debug("influxdb url: %s", self.configuration['url'])
