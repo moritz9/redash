@@ -53,8 +53,8 @@ class Drill(BaseQueryRunner):
                 'port': {
                     'type': 'number'
                 },
-                'is_zookeeper': {
-                    'type': 'string'
+                'zookeeper_path': {
+                    'type': 'string'  # e.g. "/drill/datadrill1"
                 },
                 'user_auth': {
                     'type': 'string'
@@ -86,15 +86,15 @@ class Drill(BaseQueryRunner):
         logger.info('config: ' + str(configuration))
         super(Drill, self).__init__(configuration)
 
-    def get_drillbit(self, host, port, is_zookeeper):
-        if is_zookeeper:
+    def get_drillbit(self, host, port, zookeeper_path):
+        if zookeeper_path:
             if not port:
                 port = 2181
             zk = KazooClient(hosts='{0}:{1}'.format(host, port))
             zk.start()
-            children = zk.get_children("/drill/karhoodatadrill1")
+            children = zk.get_children(zookeeper_path)
             znode = children[random.randint(0, len(children) - 1)]
-            data, stat = zk.get("/drill/karhoodatadrill1/" + znode)
+            data, stat = zk.get(zookeeper_path + "/" + znode)
             zk.stop()
             dsi = coordination.DrillServiceInstance()
             dsi.ParseFromString(data)
@@ -145,7 +145,7 @@ class Drill(BaseQueryRunner):
         drillbit_host, drillbit_port = self.get_drillbit(
             self.configuration.get('host', None),
             self.configuration.get('port', None),
-            json.loads(self.configuration.get('is_zookeeper', "false").lower()))
+            json.loads(self.configuration.get('zookeeper_path', '{}').lower()))
 
         user_auth = self.configuration.get('user_auth', None)
         if user_auth:
