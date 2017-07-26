@@ -1,20 +1,20 @@
 import json
+from datetime import datetime, timedelta
+import logging
 import requests
 import random
 import re
-from datetime import datetime, timedelta
 
-from redash.utils import JSONEncoder
 from redash.query_runner import *
+from redash.utils import JSONEncoder
 
-import logging
 logger = logging.getLogger(__name__)
 
 # Prereqirements and installation on a clean re:dash instance:
 # sudo pip2.7 install pydrill
 # sudo pip2.7 install kazoo
 # sudo pip2.7 install protobuf
-# Copy drill.py and drill_coordination.py to /opt/redash/current/redash/query_runner/
+# Copy drill.py and drill_coordination_pb2.py to /opt/redash/current/redash/query_runner/
 # Run
 # sudo supervisorctl restart all
 
@@ -26,7 +26,7 @@ try:
     from pydrill.connection.requests_conn import RequestsHttpConnection
     from pydrill.transport import TransportError
     from kazoo.client import KazooClient
-    import drill_coordination as coordination
+    import drill_coordination_pb2 as coordination
     enabled = True
 
     class DrillRequestsHttpConnection(RequestsHttpConnection):
@@ -141,11 +141,11 @@ class Drill(BaseQueryRunner):
         result = result.replace('$YESTERDAY$', yesterday)
         return result
 
-    def run_query(self, query):
+    def run_query(self, query, user):
         drillbit_host, drillbit_port = self.get_drillbit(
             self.configuration.get('host', None),
             self.configuration.get('port', None),
-            json.loads(self.configuration.get('zookeeper_path', '{}').lower()))
+            self.configuration.get('zookeeper_path', None))
 
         user_auth = self.configuration.get('user_auth', None)
         if user_auth:
@@ -197,5 +197,6 @@ class Drill(BaseQueryRunner):
             error = drillbit_host + '\n' + str(ex)
 
         return json_data, error
+
 
 register(Drill)

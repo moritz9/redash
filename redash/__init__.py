@@ -86,6 +86,18 @@ class SlugConverter(BaseConverter):
         return value
 
 
+class ReverseProxied(object):
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        scheme = environ.get('HTTP_X_FORWARDED_PROTO')
+        scheme = 'https'
+        if scheme:
+            environ['wsgi.url_scheme'] = scheme
+        return self.app(environ, start_response)
+
+
 def create_app(load_admin=True):
     from redash import handlers
     from redash.admin import init_admin
@@ -100,7 +112,9 @@ def create_app(load_admin=True):
 
     # Make sure we get the right referral address even behind proxies like nginx.
     app.wsgi_app = ProxyFix(app.wsgi_app, settings.PROXIES_COUNT)
+    app.wsgi_app = ReverseProxied(app.wsgi_app)
     app.url_map.converters['org_slug'] = SlugConverter
+
 
     if settings.ENFORCE_HTTPS:
         SSLify(app, skips=['ping'])
