@@ -37,8 +37,22 @@ function mapRenderer() {
       });
       const mapControls = L.control.layers().addTo(map);
       const layers = {};
-      const tileLayer = L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      /*const tileLayer = L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);*/
+      const tileLayer = L.tileLayer('http://{s}.{base}.maps.cit.api.here.com/maptile/2.1/{type}/{mapID}/{scheme}/{z}/{x}/{y}/{size}/{format}?app_id={app_id}&app_code={app_code}&lg={language}', {
+        attribution: 'Map &copy; 2016 <a href="http://developer.here.com">HERE</a>',
+        subdomains: '1234',
+        base: 'base',
+        type: 'maptile',
+        scheme: 'pedestrian.day',
+        app_id: 'insteteyA3hufe5uqu2A',
+        app_code: '6Rlm-5iBHtLExKbPJEG-OA',
+        mapID: 'newest',
+        maxZoom: 20,
+        language: 'eng',
+        format: 'png8',
+        size: '256'
       }).addTo(map);
 
       function getBounds() {
@@ -169,9 +183,8 @@ function mapRenderer() {
         const queryData = $scope.queryResult.getData();
         const classify = $scope.visualization.options.classify;
 
-        $scope.visualization.options.mapTileUrl = $scope.visualization.options.mapTileUrl || '//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-
-        tileLayer.setUrl($scope.visualization.options.mapTileUrl);
+        //$scope.visualization.options.mapTileUrl = $scope.visualization.options.mapTileUrl || '//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        //tileLayer.setUrl($scope.visualization.options.mapTileUrl);
 
         if ($scope.visualization.options.clusterMarkers === undefined) {
           $scope.visualization.options.clusterMarkers = true;
