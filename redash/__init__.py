@@ -117,7 +117,7 @@ def create_app(load_admin=True):
 
     # Make sure we get the right referral address even behind proxies like nginx.
     app.wsgi_app = ProxyFix(app.wsgi_app, settings.PROXIES_COUNT)
-    app.wsgi_app = ReverseProxied(app.wsgi_app)
+    #app.wsgi_app = ReverseProxied(app.wsgi_app)
     app.url_map.converters['org_slug'] = SlugConverter
 
 
