@@ -95,8 +95,8 @@ create_database() {
 
 compile_node_webapp() {
     cd /opt/redash/current
-    sudo npm install
-    sudo -u redash npm run build
+    sudo -u redash npm install
+    sudo -u redash npm run build || true
 }
 
 setup_supervisor() {
@@ -106,6 +106,7 @@ setup_supervisor() {
 
 setup_nginx() {
     rm /etc/nginx/sites-enabled/default
+    # TODO(mneun): make the use of nginx_redash_elb configurable
     wget -O /etc/nginx/sites-available/redash "$FILES_BASE_URL/nginx_redash_site"
     ln -nfs /etc/nginx/sites-available/redash /etc/nginx/sites-enabled/redash
     service nginx restart
