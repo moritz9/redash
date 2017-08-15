@@ -95,7 +95,7 @@ create_database() {
 
 compile_node_webapp() {
     cd /opt/redash/current
-    npm install
+    sudo npm install
     sudo -u redash npm run build || true
 }
 
