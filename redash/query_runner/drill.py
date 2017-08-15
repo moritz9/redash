@@ -177,7 +177,7 @@ class Drill(BaseQueryRunner):
                     continue
                 q = self.magic_helpers(q)
                 q = annotation + q
-                result = connection.query(q, timeout=600)
+                result = connection.query(q, timeout=3600)
                 print(result.rows)
                 logger.info(result.rows)
             columns = []
