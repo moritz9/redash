@@ -37,9 +37,9 @@ function queryTimePicker() {
       }
 
       $scope.updateSchedule = () => {
-        var newSchedule;
-        if ($scope.hour == 'hourly') {
-          newSchedule = 'hourly:' + $scope.minute;
+        let newSchedule;
+        if ($scope.hour === 'hourly') {
+          newSchedule = `hourly:${scope.minute}`;
         } else {
           newSchedule = moment().hour($scope.hour)
                                 .minute($scope.minute)
