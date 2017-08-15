@@ -30,7 +30,7 @@ export function scheduleHumanize(schedule) {
   if (schedule === null) {
     return 'Never';
   } else if (schedule.match(/hourly:\d\d/) !== null) {
-    return "" + schedule;
+    return `${schedule}`;
   } else if (schedule.match(/\d\d:\d\d/) !== null) {
     const parts = schedule.split(':');
     const localTime = moment
