@@ -1,0 +1,42 @@
+upstream rd_servers {
+  server 127.0.0.1:5000;
+}
+
+server {
+
+  server_tokens off;
+
+  listen 80 default;
+
+  access_log /var/log/nginx/rd.access.log;
+
+  gzip on;
+  gzip_types *;
+  gzip_proxied any;
+
+  location / {
+    if ($http_x_forwarded_proto != 'https') {
+      # Force all HTTP connections to HTTPS. This also applies to the requests
+      # coming in intially to the root. So ELB can have the 80 and 443 listeners
+      # point onto the same target group with port 80 connecting here.
+      rewrite ^ https://$host$request_uri? permanent;
+    }
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    #proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_pass       http://rd_servers;
+    #proxy_redirect   off;
+    #sub_filter "next=http" "next=https";
+    #sub_filter_once off;
+  }
+
+  location /elb-status {
+    #access_log off;
+    return 200 'A-OK!';
+    # because default content-type is application/octet-stream,
+    # browser will offer to "save the file"...
+    # the next line allows you to see it in the browser so you can test
+    add_header Content-Type text/plain;
+  }
+}
