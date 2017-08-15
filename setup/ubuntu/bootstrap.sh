@@ -52,7 +52,6 @@ install_system_packages() {
     # npm for JavaScript Node compilation
     apt install -y npm
     apt install -y nodejs-legacy
-    np
 }
 
 create_directories() {
