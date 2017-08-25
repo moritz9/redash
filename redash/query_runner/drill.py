@@ -141,6 +141,11 @@ class Drill(BaseQueryRunner):
         result = result.replace('$YESTERDAY$', yesterday)
         return result
 
+    def test_connection(self):
+        json_data, error = self.run_query('SHOW SCHEMAS', 'connection_test')
+        if error or not json_data:
+            raise Exception('ERROR connecting to Drill: %s' % (error))
+
     def run_query(self, query, user):
         drillbit_host, drillbit_port = self.get_drillbit(
             self.configuration.get('host', None),
@@ -177,7 +182,7 @@ class Drill(BaseQueryRunner):
                     continue
                 q = self.magic_helpers(q)
                 q = annotation + q
-                result = connection.query(q, timeout=3600)
+                result = connection.query(q, timeout=600)
                 print(result.rows)
                 logger.info(result.rows)
             columns = []
