@@ -13,6 +13,7 @@ import 'leaflet-fullscreen/dist/leaflet.fullscreen.css';
 
 import template from './map.html';
 import editorTemplate from './map-editor.html';
+import * as s2lib from './s2geometry';
 
 /*
 This is a workaround for an issue with giving Leaflet load the icon on its own.
@@ -24,6 +25,12 @@ L.Icon.Default.mergeOptions({
 });
 
 delete L.Icon.Default.prototype._getIconUrl;
+
+/*
+This is a workaround for the naming equivalence in S2.
+*/
+const S2 = s2lib.S2;
+
 
 function mapRenderer() {
   return {
@@ -40,7 +47,7 @@ function mapRenderer() {
       /*const tileLayer = L.tileLayer('//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(map);*/
-      const tileLayer = L.tileLayer('http://{s}.{base}.maps.cit.api.here.com/maptile/2.1/{type}/{mapID}/{scheme}/{z}/{x}/{y}/{size}/{format}?app_id={app_id}&app_code={app_code}&lg={language}', {
+      const tileLayer = L.tileLayer('https://{s}.{base}.maps.cit.api.here.com/maptile/2.1/{type}/{mapID}/{scheme}/{z}/{x}/{y}/{size}/{format}?app_id={app_id}&app_code={app_code}&lg={language}', {
         attribution: 'Map &copy; 2016 <a href="http://developer.here.com">HERE</a>',
         subdomains: '1234',
         base: 'base',
@@ -111,6 +118,25 @@ function mapRenderer() {
         return description;
       }
 
+      function getColor(d) {
+        return d < 50  ? '#ffffb2' :
+               d < 100  ? '#fecc5c' :
+               d < 150  ? '#fd8d3c' :
+               d < 200  ? '#f03b20' :
+                          '#bd0026';
+      }
+
+      function createPolygon(geojson, color) {
+        //var latlngs = [[37, -109.05],[41, -109.03],[41, -102.05],[37, -102.04]];
+        var listObj = JSON.parse(geojson);
+        var latlngs = [];
+        for (var i = 0; i < listObj[0].length; i++) {
+          latlngs.push([listObj[0][i][1], listObj[0][i][0]])
+        }
+        console.log(latlngs);
+        return L.polygon(latlngs, {color: color, weight: 1, fillOpacity: 0.7});
+      }
+
       function removeLayer(layer) {
         if (layer) {
           mapControls.removeLayer(layer);
@@ -121,6 +147,8 @@ function mapRenderer() {
       function addLayer(name, points) {
         const latCol = $scope.visualization.options.latColName || 'lat';
         const lonCol = $scope.visualization.options.lonColName || 'lon';
+        const geomCol = $scope.visualization.options.geomColName || 'geojson';
+        const valueCol = $scope.visualization.options.valueColName || 'value';
         const classify = $scope.visualization.options.classify;
 
         let markers;
@@ -159,12 +187,20 @@ function mapRenderer() {
 
           const lat = row[latCol];
           const lon = row[lonCol];
+          const geojson = row[geomCol];
 
-          if (lat === null || lon === null) return;
+          if ((lat === null || lon === null) && geojson === null) return;
 
           if (classify && classify !== 'none') {
             const groupColor = $scope.visualization.options.groups[name].color;
             marker = heatpoint(lat, lon, groupColor);
+          } else if (geojson && geojson !== 'none') {
+            //var polygon = createPolygon(geojson);
+            //polygon.addTo(map);
+            const value = row[valueCol] || 0;
+            const color = getColor(value);
+            marker = createPolygon(geojson, color);
+            //marker = createMarker(lat, lon);
           } else {
             marker = createMarker(lat, lon);
           }
