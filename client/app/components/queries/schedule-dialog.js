@@ -41,6 +41,7 @@ function queryTimePicker() {
       }
 
       $scope.updateSchedule = () => {
+<<<<<<< HEAD:client/app/components/queries/schedule-dialog.js
         var newSchedule;
         if ($scope.hour == 'hourly') {
           newSchedule = 'hourly:' + $scope.minute;
@@ -50,6 +51,16 @@ function queryTimePicker() {
             .minute($scope.minute)
             .utc()
             .format('HH:mm');
+=======
+        let newSchedule;
+        if ($scope.hour === 'hourly') {
+          newSchedule = `hourly:${scope.minute}`;
+        } else {
+          newSchedule = moment().hour($scope.hour)
+                                .minute($scope.minute)
+                                .utc()
+                                .format('HH:mm');
+>>>>>>> f74253045897f209768c7490d3b68c8b4488a623:client/app/pages/queries/schedule-dialog.js
         }
         if (newSchedule !== $scope.query.schedule) {
           $scope.query.schedule = newSchedule;

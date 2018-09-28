@@ -842,7 +842,10 @@ def should_schedule_next(previous_iteration, now, schedule, failures):
     else:
         logging.info("Checking schedule %s", schedule)
         hour, minute = schedule.split(':')
+<<<<<<< HEAD
 
+=======
+>>>>>>> f74253045897f209768c7490d3b68c8b4488a623
         if hour == 'hourly':
             minute = int(minute)
             next_iteration = previous_iteration.replace(minute=minute)
@@ -857,9 +860,13 @@ def should_schedule_next(previous_iteration, now, schedule, failures):
             normalized_previous_iteration = previous_iteration.replace(hour=hour, minute=minute)
             if normalized_previous_iteration > previous_iteration:
                 previous_iteration = normalized_previous_iteration - datetime.timedelta(days=1)
+<<<<<<< HEAD
 
             next_iteration = (previous_iteration + datetime.timedelta(days=1)).replace(hour=hour, minute=minute)
 
+=======
+            next_iteration = (previous_iteration + datetime.timedelta(days=1)).replace(hour=hour, minute=minute)
+>>>>>>> f74253045897f209768c7490d3b68c8b4488a623
     if failures:
         next_iteration += datetime.timedelta(minutes=2**failures)
     return now > next_iteration

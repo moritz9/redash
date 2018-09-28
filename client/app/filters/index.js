@@ -104,6 +104,7 @@ export function showError(field) {
   }
   return field.$touched && field.$invalid;
 }
+<<<<<<< HEAD
 
 const units = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
 
@@ -129,3 +130,5 @@ export function join(arr) {
 
   return arr.join(' / ');
 }
+=======
+>>>>>>> f74253045897f209768c7490d3b68c8b4488a623
